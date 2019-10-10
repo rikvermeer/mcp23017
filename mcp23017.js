@@ -69,7 +69,7 @@ const registers = {
 	OLATB: 0x15  // output latches B
 };
 
-const IOPi = function(address, smbus) {
+const IOPi = function(smbus, address) {
 	this.config = {
 		// create a byte array for each port
 		// index: 0 = Direction, 1 = value, 2 = pullup, 3 = polarity
@@ -98,18 +98,28 @@ const IOPi = function(address, smbus) {
 	this.bus.writeByteSync(this.config.ioaddress, registers.IOCON, this.config.ioconfig);
 
 	//Read port a, b
+	
+
+	this.config.port_a_direction = this.bus.readByteSync(this.config.ioaddress, registers.IODIRA);
+	this.config.port_b_direction = this.bus.readByteSync(this.config.ioaddress, registers.IODIRB);
+	
 	this.config.port_a_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOA);
 	this.config.port_b_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOB);
-	
+
+	this.config.port_a_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUA);
+	this.config.port_b_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUB);
+
+	this.config.port_a_polarity = this.bus.readByteSync(this.config.ioaddress, registers.IPOLA);
+	this.config.port_b_polarity = this.bus.readByteSync(this.config.ioaddress, registers.IPOLB);
 	//Set the ports to input? mode
-	this.bus.writeByteSync(this.config.ioaddress, registers.IODIRA, 0xFF);
-    this.bus.writeByteSync(this.config.ioaddress, registers.IODIRB, 0xFF);
+	//this.bus.writeByteSync(this.config.ioaddress, registers.IODIRA, 0xFF);
+    //this.bus.writeByteSync(this.config.ioaddress, registers.IODIRB, 0xFF);
     
-    this.setPortPullups(0, 0x00);
-    this.setPortPullups(1, 0x00);
+    //this.setPortPullups(0, 0x00);
+    //this.setPortPullups(1, 0x00);
     
-    this.invertPort(0, 0x00);
-    this.invertPort(1, 0x00);
+    //this.invertPort(0, 0x00);
+    //this.invertPort(1, 0x00);
 }
 
 
