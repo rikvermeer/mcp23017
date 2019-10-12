@@ -9,7 +9,7 @@
   "author": "Rik Vermeer, ABElectronics",
   "license": "ISC",
   "dependencies": {
-    "i2c-bus": "^5.1.0"
+    "i2c-bus": "^3.1.0"
   },
   "repository": {
     "type": "git",

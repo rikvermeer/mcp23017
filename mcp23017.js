@@ -1,5 +1,13 @@
 
-const i2c = require('i2c-bus');
+//const i2c = require('i2c-bus');
+const i2c = {
+	openSync: function() {
+		return {
+			writeByteSync: function() {},
+			readByteSync: function() {}
+		}
+	}
+}
 
 /*
     The MCP23017 chip is split into two 8-bit ports.  port 0 controls pins
