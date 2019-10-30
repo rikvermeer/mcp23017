@@ -1,13 +1,13 @@
 
-//const i2c = require('i2c-bus');
-const i2c = {
-	openSync: function() {
-		return {
-			writeByteSync: function() {},
-			readByteSync: function() {}
-		}
-	}
-}
+const i2c = require('i2c-bus');
+// const i2c = {
+// 	openSync: function() {
+// 		return {
+// 			writeByteSync: function() {},
+// 			readByteSync: function() {}
+// 		}
+// 	}
+// }
 
 /*
     The MCP23017 chip is split into two 8-bit ports.  port 0 controls pins
@@ -77,7 +77,7 @@ const registers = {
 	OLATB: 0x15  // output latches B
 };
 
-const IOPi = function(smbus, address) {
+const MCP23017 = function(smbus, address) {
 	this.config = {
 		// create a byte array for each port
 		// index: 0 = Direction, 1 = value, 2 = pullup, 3 = polarity
@@ -135,7 +135,7 @@ const IOPi = function(smbus, address) {
 	internal method for reading the value of a single bit
         within a byte
 **/
-IOPi.prototype.checkBit = function(byte, bit) {
+MCP23017.prototype.checkBit = function(byte, bit) {
 	let value = 0;
 	if(byte & (1 << bit)) {
 		value = 1;
@@ -146,7 +146,7 @@ IOPi.prototype.checkBit = function(byte, bit) {
 /**
 	internal method for setting the value of a single bit within a byte
 **/
-IOPi.prototype.updateByte = function(byte, bit, value) {
+MCP23017.prototype.updateByte = function(byte, bit, value) {
 	if(value == 0) {
     	return byte & ~(1 << bit);
     } else if(value == 1) {
@@ -159,7 +159,7 @@ set IO direction for an individual pin
          pins 0 to 15
          direction 1 = input, 0 = output
 **/
-IOPi.prototype.setPinDirection = function(pin, direction) {
+MCP23017.prototype.setPinDirection = function(pin, direction) {
 	if(pin < 8) {
 		this.config.port_a_direction = this.updateByte(this.config.port_a_direction, pin, direction);
 		this.bus.writeByteSync(this.config.ioaddress, registers.IODIRA, this.config.port_a_direction);
@@ -174,7 +174,7 @@ set direction for an IO port
         port 0 = pins 0 to 7, port 1 = pins 8 to 15
         1 = input, 0 = output
 **/
-IOPi.prototype.setPortDirection = function(port, direction) {
+MCP23017.prototype.setPortDirection = function(port, direction) {
 	if(port == 0) {
 		this.bus.writeByteSync(this.config.ioaddress, registers.IODIRA, direction);
 		this.config.port_a_direction = direction;
@@ -189,7 +189,7 @@ set the internal 100K pull-up resistors for an individual pin
         pins 1 to 16
         value 1 = enabled, 0 = disabled
 **/
-IOPi.prototype.setPinPullup = function(pin, value) {
+MCP23017.prototype.setPinPullup = function(pin, value) {
 	if(pin < 8) {
 		this.config.port_a_pullup = this.updateByte(this.config.port_a_pullup, pin, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPPUA, this.config.port_a_pullup);
@@ -202,7 +202,7 @@ IOPi.prototype.setPinPullup = function(pin, value) {
 /**
 set the internal 100K pull-up resistors for the selected IO port
 **/
-IOPi.prototype.setPortPullups = function(port, value) {
+MCP23017.prototype.setPortPullups = function(port, value) {
 	if(port == 0) {
 		this.config.port_a_pullup = value;
         this.bus.writeByteSync(this.config.ioaddress, registers.GPPUA, value);
@@ -213,7 +213,7 @@ IOPi.prototype.setPortPullups = function(port, value) {
 }
 
 /** write to an individual pin **/
-IOPi.prototype.writePin = function(pin, value) {
+MCP23017.prototype.writePin = function(pin, value) {
 	if(pin < 8) {
         this.config.port_a_value = this.updateByte(this.config.port_a_value, pin, value);
         this.bus.writeByteSync(this.config.ioaddress, registers.GPIOA, this.config.port_a_value);
@@ -229,7 +229,7 @@ write to all pins on the selected port
         port 0 = pins 0) to 7, port 1 = pins 8 to 15
         value = number between 0 and 255 or 0x00 and 0xFF
 **/
-IOPi.prototype.writePort = function(port, value) {
+MCP23017.prototype.writePort = function(port, value) {
 	if(port == 0) {
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPIOA, value);
         this.config.port_a_value = value;
@@ -243,7 +243,7 @@ IOPi.prototype.writePort = function(port, value) {
 	read the value of an individual pin 0 - 15
         returns 0 = logic level low, 1 = logic level high
 **/
-IOPi.prototype.readPin = function(pin) {
+MCP23017.prototype.readPin = function(pin) {
 	let value = 0;
 	if(pin < 8) {
 		this.config.port_a_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOA);
@@ -262,7 +262,7 @@ read all pins on the selected port
         port 0 = pins 0 to 7, port 1 = pins 8 to 15
         returns number between 0 and 255 or 0x00 and 0xFF
 **/
-IOPi.prototype.readPort = function(port) {
+MCP23017.prototype.readPort = function(port) {
 	let value = 0;
 	if(port == 0) {
 		this.config.port_a_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOA);
@@ -279,7 +279,7 @@ invert the polarity of the selected pin
         polarity 0 = same logic state of the input pin, 1 = inverted logic
         state of the input pin
 **/
-IOPi.prototype.invertPin = function(pin, polarity) {
+MCP23017.prototype.invertPin = function(pin, polarity) {
 	if(pin < 8) {
 		this.config.port_a_polarity = this.updateByte(this.config.port_a_polarity, pin, polarity);
         this.bus.writeByteSync(this.config.ioaddress, registers.IPOLA, this.config.port_a_polarity);
@@ -295,7 +295,7 @@ Invert the polarity of the pins on a selected port
         polarity 0 = same logic state of the input pin, 1 = inverted logic
         state of the input pin
 **/
-IOPi.prototype.invertPort = function(port, polarity) {
+MCP23017.prototype.invertPort = function(port, polarity) {
 	if(port == 0) {
 		this.bus.writeByteSync(this.config.ioaddress, registers.IPOLA, polarity)
         this.config.port_a_polarity = polarity
@@ -310,7 +310,7 @@ IOPi.prototype.invertPort = function(port, polarity) {
 	1 = The INT pins are internally connected,  
 	__inta is associated with PortA and __intb is associated with PortB
 **/
-IOPi.prototype.mirrorInterrupts = function(value) {
+MCP23017.prototype.mirrorInterrupts = function(value) {
 	if(value == 0) {
 		this.config.ioconfig = this.updateByte(this.config.ioconfig, 6, 0);
 		this.bus.writeByteSync(this.config.ioaddress, registers.IOCON, this.config.ioconfig);
@@ -325,7 +325,7 @@ IOPi.prototype.mirrorInterrupts = function(value) {
         1 = Active-high.
         0 = Active-low.
 **/
-IOPi.prototype.setInterruptPolarity = function(value) {
+MCP23017.prototype.setInterruptPolarity = function(value) {
 	if(value == 0) {
 		this.config.ioconfig = this.updateByte(this.config.ioconfig, 1, 0);
 		this.bus.writeByteSync(this.config.ioaddress, registers.IOCON, this.condig.ioconfig);
@@ -341,7 +341,7 @@ Sets the type of interrupt for each pin on the selected port
         1 = interrupt is fired when the pin matches the default value, 0 =
         the interrupt is fired on state change
 **/
-IOPi.prototype.setInterruptType = function(port, value) {
+MCP23017.prototype.setInterruptType = function(port, value) {
 	if(port == 0) {
 		this.bus.writeByteSync(this.config.ioaddress, registers.INTCONA, value);
 	} else {
@@ -355,7 +355,7 @@ These bits set the compare value for pins configured for
         If the associated pin level is the opposite from the register bit, an
         interrupt occurs.
 **/
-IOPi.prototype.setInterruptDefaults = function(port, value) {
+MCP23017.prototype.setInterruptDefaults = function(port, value) {
 	if(port == 0) {
 		this.bus.writeByteSync(this.config.ioaddress, registers.DEFVALA, value);
 	} else {
@@ -368,7 +368,7 @@ Enable interrupts for the pins on the selected port
         port 0 = pins 0 to 7, port 1 = pins 8 to 15
         value = number between 0 and 255 or 0x00 and 0xFF
 **/
-IOPi.prototype.setInterruptOnPort = function(port, value) {
+MCP23017.prototype.setInterruptOnPort = function(port, value) {
 	if(port == 0) {
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPINTENA, value);
 		this.config.inta = value
@@ -383,7 +383,7 @@ Enable interrupts for the selected pin
         Pin = 0 to 15
         Value 0 = interrupt disabled, 1 = interrupt enabled
 **/
-IOPi.prototype.setInterruptOnPin = function(pin, value) {
+MCP23017.prototype.setInterruptOnPin = function(pin, value) {
 	if(pin < 8) {
 		this.config.inta = this.updateByte(this.config.inta, pin, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPINTENA, this.config.inta);
@@ -398,7 +398,7 @@ IOPi.prototype.setInterruptOnPin = function(pin, value) {
 read the interrupt status for the pins on the selected port
         port 0 = pins 0 to 7, port 1 = pins 8 to 15
 **/
-IOPi.prototype.readInterruptStatus = function(port) {
+MCP23017.prototype.readInterruptStatus = function(port) {
 	let value = 0;
 	if(port == 0) {
 		value = this.bus.readByteSync(this.config.ioaddress, registers.INTFA);
@@ -413,7 +413,7 @@ read the value from the selected port at the time of the last
         interrupt trigger
         port 0 = pins 0 to 7, port 1 = pins 8 to 15
 **/
-IOPi.prototype.readInterruptCapture = function(port) {
+MCP23017.prototype.readInterruptCapture = function(port) {
 	let value = 0;
 	if(port == 0) {
 		value = this.bus.readByteSync(this.config.ioaddress, registers.INTCAPA);
@@ -426,11 +426,11 @@ IOPi.prototype.readInterruptCapture = function(port) {
 /**
 Reset the interrupts A and B to 0
 **/
-IOPi.prototype.resetInterrupts = function() {
+MCP23017.prototype.resetInterrupts = function() {
 	let val1 = this.readInterruptCapture(0);
 	let val2 = this.readInterruptCapture(1);
 	return val1, val2
 }
 
 
-module.exports = IOPi
+module.exports = MCP23017
