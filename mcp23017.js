@@ -183,7 +183,7 @@ MCP23017.prototype.setPortDirection = function (port, direction) {
 /**
  * Set the internal 100K pull-up resistors for an individual pin
  *
- * @param pin Pin 1 to 16
+ * @param pin Pin 0 to 15
  * @param value Value where 1 = enabled and 0 = disabled
  */
 MCP23017.prototype.setPinPullup = function (pin, value) {
@@ -191,7 +191,7 @@ MCP23017.prototype.setPinPullup = function (pin, value) {
 		this.config.port_a_pullup = this.updateByte(this.config.port_a_pullup, pin, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPPUA, this.config.port_a_pullup);
 	} else {
-		this.config.port_b_pullup = this.updateByte(this.config.port_a_pullup, pin, value);
+		this.config.port_b_pullup = this.updateByte(this.config.port_a_pullup, pin - 8, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPPUB, this.config.port_b_pullup);
 	}
 };
