@@ -108,6 +108,9 @@ const MCP23017 = function (smbus, address) {
 	this.config.port_a_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOA);
 	this.config.port_b_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOB);
 
+	this.config.port_a_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATA);
+	this.config.port_b_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATA);
+
 	this.config.port_a_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUA);
 	this.config.port_b_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUB);
 
@@ -197,6 +200,22 @@ MCP23017.prototype.setPinPullup = function (pin, value) {
 };
 
 /**
+ * Read/Get the pullup value of an individual pin
+ *
+ * @param pin Pins 0 to 15
+ * @returns {number} Value of given pin, where 0 = logic level low, 1 = logic level high
+ */
+MCP23017.prototype.getPinPullup = function (pin) {
+	if (pin < 8) {
+		this.config.port_a_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUA);
+		return this.checkBit(this.config.port_a_pullup, pin);
+	} else {
+		this.config.port_b_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUB);
+		return this.checkBit(this.config.port_b_pullup, pin - 8);
+	}
+};
+
+/**
  * Set the internal 100K pull-up resistors for the selected IO port
  *
  * @param port Port 0 = pins 0 to 7, port 1 = pins 8 to 15
@@ -209,6 +228,22 @@ MCP23017.prototype.setPortPullups = function (port, value) {
 	} else {
 		this.config.port_b_pullup = value;
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPPUB, value);
+	}
+};
+
+/**
+ * Read/Get the internal 100K pull-up resistors for the selected IO port
+ *
+ * @param port Port 0 = pins 0 to 7, port 1 = pins 8 to 15
+ * @returns {number} Value is a number between 0 and 255 or 0x00 and 0xFF
+ */
+MCP23017.prototype.getPortPullups = function (port) {
+	if (port === 0) {
+		this.config.port_a_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUA);
+		return this.config.port_a_pullup;
+	} else {
+		this.config.port_b_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUB);
+		return this.config.port_b_pullup;
 	}
 };
 
@@ -352,6 +387,39 @@ MCP23017.prototype.setInterruptType = function (port, value) {
 		this.bus.writeByteSync(this.config.ioaddress, registers.INTCONB, value);
 	}
 };
+
+/**
+ * Read the output latch value of an individual pin
+ *
+ * @param pin Pins 0 to 15
+ * @returns {number} Value of given pin, where 0 = logic level low, 1 = logic level high
+ */
+MCP23017.prototype.readPinOutputLatch = function (pin) {
+	if (pin < 8) {
+		this.config.port_a_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATA);
+		return this.checkBit(this.config.port_a_latch_value, pin);
+	} else {
+		this.config.port_b_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATB);
+		return this.checkBit(this.config.port_b_latch_value, pin - 8);
+	}
+};
+
+/**
+ * Read output latch value of all pins on the selected port
+ *
+ * @param port Port 0 = pins 0 to 7, port 1 = pins 8 to 15
+ * @returns {number} Value is a number between 0 and 255 or 0x00 and 0xFF
+ */
+MCP23017.prototype.readPortOutputLatches = function (port) {
+	if (port === 0) {
+		this.config.port_a_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATA);
+		return this.config.port_a_latch_value;
+	} else {
+		this.config.port_b_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATB);
+		return this.config.port_b_latch_value;
+	}
+};
+
 
 /**
  * These bits set the compare value for pins configured for interrupt-on-change on the
