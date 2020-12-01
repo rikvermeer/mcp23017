@@ -223,8 +223,7 @@ MCP23017.prototype.writePin = function (pin, value) {
 		this.config.port_a_value = this.updateByte(this.config.port_a_value, pin, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPIOA, this.config.port_a_value);
 	} else {
-		pin = pin - 8;
-		this.config.port_b_value = this.updateByte(this.config.port_b_value, pin, value);
+		this.config.port_b_value = this.updateByte(this.config.port_b_value, pin - 8, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPIOB, this.config.port_b_value);
 	}
 };
@@ -256,9 +255,8 @@ MCP23017.prototype.readPin = function (pin) {
 		this.config.port_a_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOA);
 		return this.checkBit(this.config.port_a_value, pin);
 	} else {
-		pin = pin - 8;
 		this.config.port_b_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOB);
-		return this.checkBit(this.config.port_b_value, pin);
+		return this.checkBit(this.config.port_b_value, pin - 8);
 	}
 };
 
@@ -289,7 +287,7 @@ MCP23017.prototype.invertPin = function (pin, polarity) {
 		this.config.port_a_polarity = this.updateByte(this.config.port_a_polarity, pin, polarity);
 		this.bus.writeByteSync(this.config.ioaddress, registers.IPOLA, this.config.port_a_polarity);
 	} else {
-		this.config.port_b_polarity = this.updateByte(this.config.port_b_polarity, pin, polarity);
+		this.config.port_b_polarity = this.updateByte(this.config.port_b_polarity, pin - 8, polarity);
 		this.bus.writeByteSync(this.config.ioaddress, registers.IPOLB, this.config.port_b_polarity);
 	}
 };
@@ -398,7 +396,7 @@ MCP23017.prototype.setInterruptOnPin = function (pin, value) {
 		this.config.inta = this.updateByte(this.config.inta, pin, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPINTENA, this.config.inta);
 	} else {
-		this.config.intb = this.updateByte(this.config.intb, pin, value);
+		this.config.intb = this.updateByte(this.config.intb, pin - 8, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPINTENB, this.config.intb);
 	}
 };
