@@ -194,7 +194,7 @@ MCP23017.prototype.setPinPullup = function (pin, value) {
 		this.config.port_a_pullup = this.updateByte(this.config.port_a_pullup, pin, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPPUA, this.config.port_a_pullup);
 	} else {
-		this.config.port_b_pullup = this.updateByte(this.config.port_a_pullup, pin - 8, value);
+		this.config.port_b_pullup = this.updateByte(this.config.port_b_pullup, pin - 8, value);
 		this.bus.writeByteSync(this.config.ioaddress, registers.GPPUB, this.config.port_b_pullup);
 	}
 };
