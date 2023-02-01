@@ -109,22 +109,13 @@ const MCP23017 = function (smbus, address) {
 	this.config.port_b_value = this.bus.readByteSync(this.config.ioaddress, registers.GPIOB);
 
 	this.config.port_a_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATA);
-	this.config.port_b_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATA);
+	this.config.port_b_latch_value = this.bus.readByteSync(this.config.ioaddress, registers.OLATB);
 
 	this.config.port_a_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUA);
 	this.config.port_b_pullup = this.bus.readByteSync(this.config.ioaddress, registers.GPPUB);
 
 	this.config.port_a_polarity = this.bus.readByteSync(this.config.ioaddress, registers.IPOLA);
 	this.config.port_b_polarity = this.bus.readByteSync(this.config.ioaddress, registers.IPOLB);
-	// Set the ports to input? mode
-	// this.bus.writeByteSync(this.config.ioaddress, registers.IODIRA, 0xFF);
-	// this.bus.writeByteSync(this.config.ioaddress, registers.IODIRB, 0xFF);
-
-	// this.setPortPullups(0, 0x00);
-	// this.setPortPullups(1, 0x00);
-
-	// this.invertPort(0, 0x00);
-	// this.invertPort(1, 0x00);
 };
 
 /**
