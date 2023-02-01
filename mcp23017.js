@@ -92,7 +92,8 @@ const MCP23017 = function (smbus, address) {
 
 		ioaddress: 0x20, // I2C address
 		// Initial configuration - see IOCON page in the MCP23017 datasheet for more information.
-		ioconfig: 0x22,
+        // Set default to sequential addressing and open-drain interrupts (Active-Low) by default.
+		ioconfig: 0x04
 	};
 
 	this.bus = i2c.openSync(smbus);
@@ -350,9 +351,24 @@ MCP23017.prototype.mirrorInterrupts = function (value) {
 };
 
 /**
+ * Set interrupt behavior Polarity-Controlled or Open-Drain
+ *
+ * @param value Value where 1 = Interrupts are Open-Drain, 0 = Interrupt value controlled by Interrupt Polarity (Power On Default).
+ */
+MCP23017.prototype.setInterruptOpenDrain = function (value) {
+	if (value === 0) {
+		this.config.ioconfig = this.updateByte(this.config.ioconfig, 2, 0);
+		this.bus.writeByteSync(this.config.ioaddress, registers.IOCON, this.config.ioconfig);
+	} else {
+		this.config.ioconfig = this.updateByte(this.config.ioconfig, 2, 1);
+		this.bus.writeByteSync(this.config.ioaddress, registers.IOCON, this.config.ioconfig);
+	}
+};
+
+/**
  * Set the polarity of the INT output pins
  *
- * @param value Value where 1 = Active-high, 0 = Active-low
+ * @param value Value where 1 = Active-high, 0 = Active-low (Power On Default)
  */
 MCP23017.prototype.setInterruptPolarity = function (value) {
 	if (value === 0) {
